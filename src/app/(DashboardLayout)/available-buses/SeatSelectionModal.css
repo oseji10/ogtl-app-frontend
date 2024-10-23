@@ -1,0 +1,49 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  .seating-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .seat, .driver {
+    padding: 10px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    width: 60px;
+  }
+  
+  .driver {
+    width: 80px;
+  }
+  
+  .spacer {
+    flex-grow: 1;
+  }
+  
