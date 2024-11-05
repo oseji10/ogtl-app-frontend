@@ -1,4 +1,5 @@
 'use client';
+
 import {
   AppBar,
   Toolbar,
@@ -9,37 +10,42 @@ import {
   InputAdornment,
   IconButton,
   Box,
-  Stack,
   MenuItem,
   Select,
   InputLabel,
   RadioGroup,
   Radio,
   FormControlLabel,
-  FormLabel
+  FormLabel,
+  CircularProgress,
+  Container,
+  Stack,
 } from '@mui/material';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import PeopleIcon from '@mui/icons-material/People';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Header from './stryling/header';
+import Footer from './stryling/footer';
 
 const styles = {
   heroSection: {
     position: 'relative',
-    height: '100vh',
-    backgroundImage: `url('/images/hiace.jpg')`,  // Background image
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backdropFilter: 'blur(5px)',  // Optional: Blur effect for background
+    height: '90vh',
+    overflow: 'hidden',
   },
   formContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',  // Transparent white background
+    position: 'absolute',
+    top: '10%',
+    right: '5%',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: '20px',
     borderRadius: '8px',
     boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
-    width: '500px',
+    width: '400px',
   },
   button: {
     backgroundColor: '#2f6e36',
@@ -49,38 +55,57 @@ const styles = {
       backgroundColor: '#24562a',
     },
   },
+  section: {
+    padding: '40px 0',
+  },
+  footer: {
+    backgroundColor: '#2f6e36',
+    color: '#fff',
+    padding: '20px 0',
+    textAlign: 'center',
+  },
 };
 
-const Header = () => {
+<Header/>
+
+const HeroSlideshow = () => {
+  const [currentImage, setCurrentImage] = useState(0);
+  const images = ['/images/abuja2.jpg', '/images/lagos.webp'];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 5000); // Change every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <AppBar position="static" style={{ backgroundColor: '#fff', color: '#000', boxShadow: 'none' }}>
-      <Toolbar style={{ justifyContent: 'space-between' }}>
-        <Typography variant="h4" component="div">
-          On-God Transport Ltd.
-        </Typography>
-        <div>
-          <Button color="inherit">Home</Button>
-          <Button color="inherit">Routes</Button>
-          <Button color="inherit">Terminals</Button>
-          <Button color="inherit">Services</Button>
-          <Button color="inherit">About</Button>
-          <Button color="inherit">Contact</Button>
-        </div>
-      </Toolbar>
-    </AppBar>
+    <Box
+      style={{
+        ...styles.heroSection,
+        backgroundImage: `url(${images[currentImage]})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        transition: 'background-image 1s ease-in-out',
+      }}
+    >
+      <SearchForm />
+    </Box>
   );
 };
 
-const Forms = () => {
-  const router = useRouter(); // Initialize useRouter
+const SearchForm = () => {
+  const router = useRouter();
   const [tripType, setTripType] = useState('oneWay');
   const [bookingData, setBookingData] = useState({
     from: '',
     to: '',
     passengers: '',
     departureDate: '',
-    returnDate: '', 
+    returnDate: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [locations, setLocations] = useState([]);
 
   const handleTripTypeChange = (event) => {
     setTripType(event.target.value);
@@ -90,6 +115,7 @@ const Forms = () => {
   };
 
   const handleSubmit = () => {
+    setLoading(true);
     const queryParams = new URLSearchParams({
       from: bookingData.from,
       to: bookingData.to,
@@ -97,26 +123,13 @@ const Forms = () => {
       returnDate: tripType === 'roundTrip' ? bookingData.returnDate : undefined,
       passengers: bookingData.passengers,
     }).toString();
-
-    router.push(`/available-buses?${queryParams}`); // Navigate to the second page with query parameters
+    router.push(`/available-buses?${queryParams}`);
   };
 
-  // const handleSubmit = () => {
-  //   router.push({
-  //     pathname: 'http://localhost:3000/available-buses',
-  //     query: {
-  //       from: bookingData.from,
-  //       to: bookingData.to,
-  //       departureDate: bookingData.departureDate,
-  //       returnDate: tripType === 'roundTrip' ? bookingData.returnDate : undefined,
-  //       passengers: bookingData.passengers,
-  //     },
-  //   });
-  // };
-  
+  const handleChange = (event) => {
+    setBookingData({ ...bookingData, [event.target.name]: event.target.value });
+  };
 
-  // Fetch locations
-  const [locations, setLocations] = useState([]);
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -130,138 +143,175 @@ const Forms = () => {
     fetchLocations();
   }, []);
 
-  const handleChange = (event) => {
-    setBookingData({
-      ...bookingData,
-      [event.target.name]: event.target.value,
-    });
-  };
   return (
-    <div>
-      <Header />
-      <Box style={styles.heroSection}>
-        <Box style={styles.formContainer}>
-          <Typography variant="h4" gutterBottom>
-            Book Your Trip
-          </Typography>
-          <FormLabel component="legend">Trip Type</FormLabel>
-          <RadioGroup
-            row
-            value={tripType}
-            onChange={handleTripTypeChange}
+    <Box style={styles.formContainer}>
+      <Typography variant="h5" gutterBottom>Book Your Trip</Typography>
+      <FormLabel component="legend">Trip Type</FormLabel>
+      <RadioGroup row value={tripType} onChange={handleTripTypeChange}>
+        <FormControlLabel value="oneWay" control={<Radio />} label="One-Way" />
+        <FormControlLabel value="roundTrip" control={<Radio />} label="Round-Trip" />
+      </RadioGroup>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <InputLabel id="current-city-label">Departure</InputLabel>
+          <Select
+            labelId="current-city-label"
+            name="from"
+            fullWidth
+            value={bookingData.from}
+            onChange={handleChange}
+            startAdornment={
+              <InputAdornment position="start">
+                <LocationOnIcon />
+              </InputAdornment>
+            }
           >
-            <FormControlLabel value="oneWay" control={<Radio />} label="One-Way" />
-            <FormControlLabel value="roundTrip" control={<Radio />} label="Round-Trip" />
-          </RadioGroup>
-          <Grid container spacing={2} alignItems="center">
-            {/* Departure City */}
-            <Grid item xs={6}>
-              <InputLabel id="current-city-label">Departure</InputLabel>
-              <Select
-                labelId="current-city-label"
-                name="from"
-                fullWidth
-                value={bookingData.from}
-                onChange={handleChange}
-                required
-                startAdornment={
+            <MenuItem value="">Select Departure</MenuItem>
+            {locations.map((location) => (
+              <MenuItem key={location.locationID} value={location.locationID}>
+                {location.locationName}
+              </MenuItem>
+            ))}
+          </Select>
+        </Grid>
+        <Grid item xs={12}>
+          <InputLabel id="destination-city-label">Destination</InputLabel>
+          <Select
+            labelId="destination-city-label"
+            name="to"
+            fullWidth
+            value={bookingData.to}
+            onChange={handleChange}
+            startAdornment={
+              <InputAdornment position="start">
+                <LocationOnIcon />
+              </InputAdornment>
+            }
+          >
+            {locations.map((location) => (
+              <MenuItem key={location.locationID} value={location.locationID}>
+                {location.locationName}
+              </MenuItem>
+            ))}
+          </Select>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            label="Date of Departure"
+            name="departureDate"
+            type="date"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            value={bookingData.departureDate}
+            onChange={handleChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <DateRangeIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+        {tripType === 'roundTrip' && (
+          <Grid item xs={12}>
+            <TextField
+              label="Return Date"
+              name="returnDate"
+              type="date"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              value={bookingData.returnDate}
+              onChange={handleChange}
+              InputProps={{
+                startAdornment: (
                   <InputAdornment position="start">
-                    <DirectionsCarIcon />
+                    <DateRangeIcon />
                   </InputAdornment>
-                }
-              >
-                <MenuItem value="">Select Departure</MenuItem>
-                {locations.map((location) => (
-                  <MenuItem key={location.locationID} value={location.locationID}>
-                    {location.locationName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Grid>
-
-            {/* Destination City */}
-            <Grid item xs={6}>
-              <InputLabel id="destination-city-label">Destination</InputLabel>
-              <Select
-                labelId="destination-city-label"
-                name="to"
-                fullWidth
-                value={bookingData.to}
-                onChange={handleChange}
-                required
-                startAdornment={
-                  <InputAdornment position="start">
-                    <DirectionsCarIcon />
-                  </InputAdornment>
-                }
-              >
-                {locations.map((location) => (
-                  <MenuItem key={location.locationID} value={location.locationID}>
-                    {location.locationName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Grid>
-
-            {/* Departure Date */}
-            <Grid item xs={6}>
-              <TextField
-                label="Date of Departure"
-                name="departureDate"
-                type="date"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={bookingData.departureDate}
-                onChange={handleChange}
-                required
-              />
-            </Grid>
-
-            {/* Return Date (for Round-Trip) */}
-            {tripType === 'roundTrip' && (
-              <Grid item xs={6}>
-                <TextField
-                  label="Return Date"
-                  name="returnDate"
-                  type="date"
-                  fullWidth
-                  InputLabelProps={{ shrink: true }}
-                  value={bookingData.returnDate}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-            )}
-
-            {/* Passengers */}
-            <Grid item xs={tripType === 'roundTrip' ? 12 : 6}>
-              <TextField
-                label="Number of Passengers"
-                name="passengers"
-                type="number"
-                fullWidth
-                value={bookingData.passengers}
-                onChange={handleChange}
-                required
-              />
-            </Grid>
-
-            {/* Submit button */}
-            <Grid item xs={12}>
-              <Button
-                fullWidth
-                variant="contained"
-                style={styles.button}
-                onClick={handleSubmit}
-              >
-                Book Now
-              </Button>
-            </Grid>
+                ),
+              }}
+            />
           </Grid>
-        </Box>
-      </Box>
-    </div>
+        )}
+        <Grid item xs={12}>
+          <TextField
+            label="Number of Passengers"
+            name="passengers"
+            type="number"
+            fullWidth
+            value={bookingData.passengers}
+            onChange={handleChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PeopleIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Button
+            fullWidth
+            variant="contained"
+            style={styles.button}
+            onClick={handleSubmit}
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : <DirectionsCarIcon />}
+          >
+            {loading ? 'Please wait...' : 'Book Now'}
+          </Button>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 
-export default Forms;
+const HomePage = () => (
+  <div>
+    <Header />
+    <HeroSlideshow />
+    <Container>
+      <Box style={styles.section}>
+    <h1>Why choose us?</h1>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+        <Typography variant="h1" align="left" gutterBottom>Safety First, Always</Typography>
+            <Typography variant="body1">
+            Your safety is our top priority. We uphold the highest safety standards and ensure that each vehicle is regularly inspected and maintained. Our trained drivers follow strict safety protocols, so you can enjoy a worry-free journey every time you travel with us.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={6}>
+          <Typography variant="h1" align="left" gutterBottom>Comfortable and Modern Fleet</Typography>
+            <Typography variant="body1">
+          Our buses are equipped with comfortable seating, air conditioning, and modern amenities to make your journey as pleasant as possible. Whether it’s a short trip or a long journey, our fleet is designed to provide you with the utmost comfort, helping you arrive relaxed and refreshed.
+            </Typography>
+          </Grid>
+        </Grid>
+      </Box>
+    </Container>
+
+    <Container>
+      <Box style={styles.section}>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+        <Typography variant="h1" align="left" gutterBottom>Reliable and On-Time Service</Typography>
+            <Typography variant="body1">
+We value your time and pride ourselves on punctuality. With our carefully planned schedules and dependable service, you can trust us to get you to your destination on time. Say goodbye to delays and hello to a reliable travel experience with us!
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={6}>
+          <Typography variant="h1" align="left" gutterBottom>Affordable Pricing with Excellent Service</Typography>
+            <Typography variant="body1">
+          Enjoy top-quality service without breaking the bank. Our pricing is competitive, and we strive to offer the best value for your money. With us, you don’t have to choose between affordability and quality—experience both on every trip.
+            </Typography>
+          </Grid>
+        </Grid>
+      </Box>
+    </Container>
+
+  <Footer/>
+  </div>
+);
+
+export default HomePage;

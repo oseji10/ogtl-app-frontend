@@ -13,6 +13,8 @@ import {
 } from '@mui/material';
 import { useSearchParams, useRouter } from 'next/navigation';
 import SeatSelectionModal from './seats';
+import Header from '../stryling/header';
+import Footer from '../stryling/footer';
 
 const styles = {
     heroSection: {
@@ -43,25 +45,7 @@ const styles = {
     },
   };
   
-  const Header = () => {
-    return (
-      <AppBar position="static" style={{ backgroundColor: '#fff', color: '#000', boxShadow: 'none' }}>
-        <Toolbar style={{ justifyContent: 'space-between' }}>
-          <Typography variant="h4" component="div">
-            On-God Transport Ltd.
-          </Typography>
-          <div>
-            <Button color="inherit">Home</Button>
-            <Button color="inherit">Routes</Button>
-            <Button color="inherit">Terminals</Button>
-            <Button color="inherit">Services</Button>
-            <Button color="inherit">About</Button>
-            <Button color="inherit">Contact</Button>
-          </div>
-        </Toolbar>
-      </AppBar>
-    );
-  };
+<Header/>
 
 const AvailableVehicles = () => {
   const router = useRouter(); // Initialize useRouter
@@ -183,6 +167,7 @@ const openSeatModal = (vehicle) => {
       )}
         </Box>
       </Box>
+      <Footer/>
     </div>
   );
 };
